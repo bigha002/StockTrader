@@ -16,8 +16,11 @@ pos_held = False
 
 def recalc_loop():
   while True:
-    new_symb = analyzer.recalculate()
-    time.sleep(60*10)
+    calculation = analyzer.recalculate()
+    if new_symb != calculation:
+      print("New symbol found! "+calculation)
+    new_symb = calculation
+    time.sleep(60*30)
 
 loop = threading.Thread(target=recalc_loop)
 loop.daemon = True
