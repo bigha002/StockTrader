@@ -21,9 +21,10 @@ with open('nasdaq_screen.csv', 'r') as csvfile:
 
 def recalculate():
   print("\n== RUNNING RECALCULATION ==\n")
-  hours_to_test = 2
-  action_threshold = .5
-  starterBalance = 2000
+  hours_to_test = 1
+  action_threshold = .1
+  starterBalance = 100
+  buy_power = 20
 
   best_option = None
   best_profit = 0
