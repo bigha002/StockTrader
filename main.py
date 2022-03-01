@@ -6,8 +6,10 @@ import time
 import csv
 import analyzer
 import threading
+from datetime import datetime
 from polygon import RESTClient
 
+polykey = "G2sOBR18ZcXTX1pvOvVsu1PQGWs6vtl2"
 SEC_KEY = 'CFD5PRwmZTADhdwDmuNNOu5RkKRWMtx0bVAp5Cnp' # Enter Your Secret Key Here
 PUB_KEY = 'PKOXDHJKGY1QHE0QRYBO' # Enter Your Public Key Here
 BASE_URL = 'https://paper-api.alpaca.markets' # This is the base URL for paper trading
@@ -17,7 +19,7 @@ new_symb = "ESLT"
 pos_held = False
 buy_power = 15
 
-print(api.get_bars(new_symb, TimeFrame.Minute, limit=5))
+# print(api.get_bars(new_symb, TimeFrame.Minute, limit=5))
 
 def recalc_loop():
   global new_symb
@@ -43,21 +45,17 @@ loop.start()
 #     time_in_force='day'
 # )
 
-# print(api.get_barset(new_symb, TimeFrame.Minute, limit=5))
-
 while True:
   symb = new_symb
 #   print("")
 #   print("Checking Price on "+symb)
-  key = "G2sOBR18ZcXTX1pvOvVsu1PQGWs6vtl2"
   
   market_data = None # Get one bar object for each of the past 5 minutes
-  with RESTClient(key) as r:
-        from_ = "2021-28-02"
-        to = "2021-28-02"
-        resp = r.stocks_equities_aggregates(new_symb, 10, "minute", from_, to, unadjusted=False)
-
-        print(f"Minute aggregates for {resp.ticker} between {from_} and {to}.")
+  with RESTClient(polykey) as r:
+        from_ = datetime.today().strftime('%Y-%m-%d')
+        to = datetime.today().strftime('%Y-%m-%d')
+        resp = r.stocks_equities_aggregates(new_symb, 5, "minute", from_, to, adjusted=True, limit=5000, sort="asc")
+        market_data = resp.results
 
   close_list = [] # This array will store all the closing prices from the last 5 minutes
   for bar in market_data:
