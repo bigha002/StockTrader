@@ -16,8 +16,8 @@ with open('nasdaq_screen.csv', 'r') as csvfile:
     for row in datareader:
         symbs.append(row[0])
         i += 1
-        # if i >= 100:
-        #   break
+        if i >= 100:
+          break
 
 def recalculate():
   print("\n== RUNNING RECALCULATION ==\n")
@@ -30,7 +30,7 @@ def recalculate():
   best_profit = 0
 
   for symb in symbs:
-    pos_held = False
+    pos_held = None
 
     # print("Checking Price")
     market_data = api.get_barset(symb, 'minute', limit=(60 * hours_to_test)) # Pull market data from the past 60x minutes
@@ -65,14 +65,21 @@ def recalculate():
         # print("Last Price: " + str(last_price))
 
         if ma + action_threshold < last_price and not pos_held:
+            if api.get_asset(symb).fractionable == True:
+              pos_held = (buy_power/last_price)
+            else:
+              if last_price > buy_power:
+                break
+              else:
+                pos_held = math.floor(buy_power/last_price)
             # print("Buy")
-            balance -= last_price
-            pos_held = True
+            balance -= last_price*pos_held
+            print("Bought "+str(pos_held)+" "+symb+" for "+str(last_price*pos_held))
             buys += 1
         elif ma - action_threshold > last_price and pos_held:
             # print("Sell")
-            balance += last_price
-            pos_held = False
+            balance += last_price*pos_held
+            pos_held = None
             sells += 1
         # print(balance)
 
@@ -91,11 +98,12 @@ def recalculate():
 
     if balance - startBal>best_profit and balance - startBal > close_list[60 * hours_to_test - 1] - close_list[0]:
       if api.get_asset(symb).fractionable == False:
-        if close_list[60 * hours_to_test - 1] > 15:
+        if close_list[60 * hours_to_test - 1] > buy_power:
           print(symb+' was found to have an un-fractionable price higher than $15')
           continue
       best_option = symb
       best_profit = balance - startBal
+      print(symb+" ended at "+str(balance))
 
     time.sleep(0.01)
 
