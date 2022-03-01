@@ -6,12 +6,11 @@ import time
 import csv
 import analyzer
 import threading
-from datetime import datetime
-from polygon import RESTClient
+import yfinance as yf
 
 polykey = "G2sOBR18ZcXTX1pvOvVsu1PQGWs6vtl2"
-SEC_KEY = 'CFD5PRwmZTADhdwDmuNNOu5RkKRWMtx0bVAp5Cnp' # Enter Your Secret Key Here
-PUB_KEY = 'PKOXDHJKGY1QHE0QRYBO' # Enter Your Public Key Here
+SEC_KEY = 'E0EPnAAQ5H78CyAZorw00kW7ULT4FGzzJX8LNUX6' # Enter Your Secret Key Here
+PUB_KEY = 'PK0LA4SORMRQHNG8QB4I' # Enter Your Public Key Here
 BASE_URL = 'https://paper-api.alpaca.markets' # This is the base URL for paper trading
 api = tradeapi.REST(key_id= PUB_KEY, secret_key=SEC_KEY, base_url=BASE_URL) # For real trading, don't enter a base_url
 
@@ -29,7 +28,7 @@ def recalc_loop():
     if new_symb != calculation and len(api.get_bars(calculation, TimeFrame.Minute, limit=5))>0:
       # print("New symbol found! "+calculation)
       while pos_held == True:
-          time.sleep(1)
+          time.sleep(.1)
       print("Successfully changed symbol to "+calculation)
       new_symb = calculation
 
@@ -50,20 +49,19 @@ while True:
 #   print("")
 #   print("Checking Price on "+symb)
   
-  market_data = None # Get one bar object for each of the past 5 minutes
-  with RESTClient(polykey) as r:
-        from_ = datetime.today().strftime('%Y-%m-%d')
-        to = datetime.today().strftime('%Y-%m-%d')
-        resp = r.stocks_equities_aggregates(new_symb, 5, "minute", from_, to, adjusted=True, limit=5000, sort="asc")
-        market_data = resp.results
+  # market_data = None # Get one bar object for each of the past 5 minutes
+
+  # sf = yf.Ticker(new_symb)
+  market_data = yf.download(tickers=new_symb, period='1d', interval='1m')['Close']
+  market_data = market_data[max(len(market_data)-5, 0):]
 
   close_list = [] # This array will store all the closing prices from the last 5 minutes
   for bar in market_data:
-      close_list.append(bar.c) # bar.c is the closing price of that bar's time interval
+      close_list.append(bar) # bar.c is the closing price of that bar's time interval
 
   close_list = np.array(close_list, dtype=np.float64) # Convert to numpy array
+  last_price = market_data[4] # Most recent closing price
   ma = np.mean(close_list)
-  last_price = close_list[4] # Most recent closing price
 
   print("Moving Average for "+new_symb+": " + str(ma))
   print("Last Price for "+new_symb+": " + str(last_price))
@@ -99,5 +97,4 @@ while True:
       )
       print("Sold "+str(pos_held)+" "+new_symb)
       pos_held = None
-  api.get_bars("SPY", TimeFrame.Minute, limit=10)
   time.sleep(60)

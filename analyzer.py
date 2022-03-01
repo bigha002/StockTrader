@@ -4,8 +4,8 @@ import numpy as np
 import time
 import csv
 
-SEC_KEY = 'CFD5PRwmZTADhdwDmuNNOu5RkKRWMtx0bVAp5Cnp' # Enter Your Secret Key Here
-PUB_KEY = 'PKOXDHJKGY1QHE0QRYBO' # Enter Your Public Key Here
+SEC_KEY = 'E0EPnAAQ5H78CyAZorw00kW7ULT4FGzzJX8LNUX6' # Enter Your Secret Key Here
+PUB_KEY = 'PK0LA4SORMRQHNG8QB4I' # Enter Your Public Key Here
 BASE_URL = 'https://paper-api.alpaca.markets' # This is the base URL for paper trading
 api = tradeapi.REST(key_id= PUB_KEY, secret_key=SEC_KEY, base_url=BASE_URL) # For real trading, don't enter a base_url
 
@@ -87,6 +87,10 @@ def recalculate():
     # print("Profit from algorithm for "+symb+":  " + str(balance - startBal))
 
     if balance - startBal>best_profit and balance - startBal > close_list[60 * hours_to_test - 1] - close_list[0]:
+      if api.get_asset(symb).fractionable == False:
+        if close_list[60 * hours_to_test - 1] > 15:
+          print(symb+' was found to have an un-fractionable price higher than $15')
+          continue
       best_option = symb
       best_profit = balance - startBal
 
