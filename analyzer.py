@@ -4,8 +4,8 @@ import numpy as np
 import time
 import csv
 
-SEC_KEY = 'E0EPnAAQ5H78CyAZorw00kW7ULT4FGzzJX8LNUX6' # Enter Your Secret Key Here
-PUB_KEY = 'PK0LA4SORMRQHNG8QB4I' # Enter Your Public Key Here
+SEC_KEY = 'TpxaYhfokqEco7lmv8sff9hCWOvZUwV4Rqjb0ALB' # Enter Your Secret Key Here
+PUB_KEY = 'PK5RJZFYIZC6XAYSB6CA' # Enter Your Public Key Here
 BASE_URL = 'https://paper-api.alpaca.markets' # This is the base URL for paper trading
 api = tradeapi.REST(key_id= PUB_KEY, secret_key=SEC_KEY, base_url=BASE_URL) # For real trading, don't enter a base_url
 
@@ -56,6 +56,8 @@ def recalculate():
 
     for i in range(4, 60 * hours_to_test): # Start four minutes in, so that MA can be calculated
         ma = np.mean(close_list[i-4:i+1])
+        if len(close_list) < i+1:
+          break
         last_price = close_list[i]
 
         # print("Moving Average: " + str(ma))
